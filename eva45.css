@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Monitoring Suhu & Asap</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f8f9fa;
+      color: #222;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #0077b6;
+      margin-bottom: 25px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #0077b6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      color: #0077b6;
+      margin-bottom: 5px;
+    }
+
+    .card p {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .middle-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr 2fr 2fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .gauge {
+      text-align: center;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #0077b6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .middle-section .chart-box {
+      background: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid #0077b6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .middle-section canvas {
+      height: 180px !important;
+      width: 100% !important;
+    }
+
+    .bottom-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 15px;
+    }
+
+    .chart-box,
+    .table-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      border: 2px solid #0077b6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-box h2,
+    .table-container h2 {
+      text-align: center;
+      color: #0077b6;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: #0077b6;
+      color: #fff;
+    }
+
+    tr:hover {
+      background: #e8f4f8;
+    }
+
+    #exportExcel {
+      background: #0077b6;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 500;
+    }
+
+    #exportExcel:hover {
+      background: #005f8a;
+    }
+
+    @media (max-width: 1100px) {
+      .middle-section, .bottom-section {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Dashboard Monitoring Suhu & Asap</h1>
+
+  <div class="cards">
+    <div class="card"><h3>Rata-rata Asap</h3><p id="totalAsap">0 µm</p></div>
+    <div class="card"><h3>Rata-rata Suhu</h3><p id="rataSuhu">0°C</p></div>
+    <div class="card"><h3>Status Sistem</h3><p id="statusSistem">Normal</p></div>
+    <div class="card"><h3>Waktu Terakhir</h3><p id="waktuUpdate">-</p></div>
+  </div>
+
+  <div class="middle-section">
+    <div class="gauge"><canvas id="gaugeAsap" width="120" height="120"></canvas><p>Asap (µm)</p></div>
+    <div class="gauge"><canvas id="gaugeSuhu" width="120" height="120"></canvas><p>Suhu (°C)</p></div>
+    <div class="chart-box"><h2>Line Chart Suhu</h2><canvas id="chartSuhu"></canvas></div>
+    <div class="chart-box"><h2>Line Chart Asap</h2><canvas id="chartAsap"></canvas></div>
+  </div>
+
+  <div class="bottom-section">
+    <div class="chart-box"><h2>Distribusi Status</h2><canvas id="chartPie"></canvas></div>
+    <div class="chart-box"><h2>Perbandingan Suhu & Asap</h2><canvas id="chartPerbandingan"></canvas></div>
+
+    <div class="table-container">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Data Pembacaan Sensor</h2>
+        <button id="exportExcel">📥 Unduh Laporan Excel</button>
+      </div>
+      <table>
+        <thead><tr><th>Waktu</th><th>Suhu (°C)</th><th>Asap (µm)</th><th>Status</th></tr></thead>
+        <tbody id="dataTabel"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- === FIREBASE REALTIME SCRIPT === -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWlxrkvEl9lFSyKwWTjhp36qWKka-VPH4",
+      authDomain: "kelompok5-66575.firebaseapp.com",
+      databaseURL: "https://kelompok5-66575-default-rtdb.firebaseio.com",
+      projectId: "kelompok5-66575",
+      storageBucket: "kelompok5-66575.appspot.com",
+      messagingSenderId: "577081734963",
+      appId: "1:577081734963:web:f5da59ddf3ecbea3863046"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const sensorRef = ref(db, "sensor");
+
+    const chartSuhu = new Chart(document.getElementById("chartSuhu"), {
+      type: "line",
+      data: { labels: [], datasets: [{ label: "Suhu (°C)", data: [], borderColor: "#0077b6", backgroundColor: "rgba(0,119,182,0.2)", fill: true, tension: 0.3 }] },
+    });
+
+    const chartAsap = new Chart(document.getElementById("chartAsap"), {
+      type: "line",
+      data: { labels: [], datasets: [{ label: "Asap (µm)", data: [], borderColor: "#ff6b00", backgroundColor: "rgba(255,107,0,0.2)", fill: true, tension: 0.3 }] },
+    });
+
+    const chartPie = new Chart(document.getElementById("chartPie"), {
+      type: "pie",
+      data: { labels: ["Normal", "Waspada", "Bahaya"], datasets: [{ data: [0, 0, 0], backgroundColor: ["#0077b6", "#ffaa00", "#ff0044"] }] },
+    });
+
+    const chartPerbandingan = new Chart(document.getElementById("chartPerbandingan"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          { label: "Suhu (°C)", data: [], borderColor: "#0077b6", fill: true, tension: 0.3, yAxisID: "y1" },
+          { label: "Asap (µm)", data: [], borderColor: "#ff6b00", fill: true, tension: 0.3, yAxisID: "y2" },
+        ],
+      },
+      options: {
+        scales: {
+          y1: { position: "left", ticks: { color: "#0077b6" } },
+          y2: { position: "right", ticks: { color: "#ff6b00" }, grid: { drawOnChartArea: false } },
+        },
+      },
+    });
+
+    const dataTabel = document.getElementById("dataTabel");
+    let totalAsap = 0, totalSuhu = 0, jumlahData = 0;
+    const dataExcel = [];
+
+    function drawGauge(canvasId, value, max, color) {
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      ctx.clearRect(0, 0, 120, 120);
+      const angle = Math.PI * (value / max);
+      ctx.beginPath();
+      ctx.arc(60, 60, 50, Math.PI, 2 * Math.PI);
+      ctx.strokeStyle = "#ddd";
+      ctx.lineWidth = 10;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(60, 60, 50, Math.PI, Math.PI + angle);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 10;
+      ctx.stroke();
+      ctx.font = "14px Poppins";
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.fillText(value, 60, 65);
+    }
+
+    onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      const suhu = parseFloat(data.suhu || 0);
+      const asap = parseFloat(data.asap || 0);
+      const waktu = new Date().toLocaleTimeString();
+      const status = asap > 200 ? "Bahaya" : asap > 100 ? "Waspada" : "Normal";
+
+      jumlahData++;
+      totalAsap += asap;
+      totalSuhu += suhu;
+
+      const rataAsap = (totalAsap / jumlahData).toFixed(1);
+      const rataSuhu = (totalSuhu / jumlahData).toFixed(1);
+
+      document.getElementById("totalAsap").textContent = `${rataAsap} µm`;
+      document.getElementById("rataSuhu").textContent = `${rataSuhu}°C`;
+      document.getElementById("statusSistem").textContent = status;
+      document.getElementById("waktuUpdate").textContent = waktu;
+
+      const row = `<tr><td>${waktu}</td><td>${suhu}</td><td>${asap}</td><td>${status}</td></tr>`;
+      dataTabel.insertAdjacentHTML("afterbegin", row);
+      if (dataTabel.rows.length > 8) dataTabel.deleteRow(-1);
+
+      dataExcel.unshift({ Waktu: waktu, Suhu: suhu, Asap: asap, Status: status });
+      if (dataExcel.length > 100) dataExcel.pop();
+
+      [chartSuhu, chartAsap, chartPerbandingan].forEach((chart, i) => {
+        chart.data.labels.push(waktu);
+        if (i < 2) chart.data.datasets[0].data.push(i === 0 ? suhu : asap);
+        else { chart.data.datasets[0].data.push(suhu); chart.data.datasets[1].data.push(asap); }
+        if (chart.data.labels.length > 8) { chart.data.labels.shift(); chart.data.datasets.forEach(d => d.data.shift()); }
+        chart.update();
+      });
+
+      chartPie.data.datasets[0].data = [
+        [...dataTabel.rows].filter(r => r.cells[3].innerText === "Normal").length,
+        [...dataTabel.rows].filter(r => r.cells[3].innerText === "Waspada").length,
+        [...dataTabel.rows].filter(r => r.cells[3].innerText === "Bahaya").length,
+      ];
+      chartPie.update();
+
+      drawGauge("gaugeAsap", asap, 500, "#ff6b00");
+      drawGauge("gaugeSuhu", suhu, 100, "#0077b6");
+    });
+
+    document.getElementById("exportExcel").addEventListener("click", () => {
+      if (dataExcel.length === 0) {
+        alert("Belum ada data untuk diekspor!");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(dataExcel);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+      XLSX.writeFile(wb, "Laporan_Monitoring_Suhu_Asap.xlsx");
+    });
+  </script>
+</body>
+</html>
