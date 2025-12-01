@@ -15,15 +15,11 @@
       padding: 20px;
     }
 
-    h1 {
-      text-align: center;
-      color: #0077b6;
-      margin-bottom: 25px;
-    }
+    h1 { text-align: center; color: #0077b6; margin-bottom: 25px; }
 
     .cards {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 15px;
       margin-bottom: 25px;
     }
@@ -37,21 +33,12 @@
       text-align: center;
     }
 
-    .card h3 {
-      font-size: 1rem;
-      color: #0077b6;
-      margin-bottom: 5px;
-    }
-
-    .card p {
-      font-size: 1.3rem;
-      font-weight: bold;
-      margin: 0;
-    }
+    .card h3 { font-size: 1rem; color: #0077b6; margin-bottom: 5px; }
+    .card p { font-size: 1.3rem; font-weight: bold; margin: 0; }
 
     .middle-section {
       display: grid;
-      grid-template-columns: 1fr 1fr 2fr 2fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 15px;
       margin-bottom: 25px;
     }
@@ -65,18 +52,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
-    .middle-section .chart-box {
-      background: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      border: 2px solid #0077b6;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .middle-section canvas {
-      height: 180px !important;
-      width: 100% !important;
-    }
+    .middle-section canvas { height: 180px !important; width: 100% !important; }
 
     .bottom-section {
       display: grid;
@@ -84,42 +60,10 @@
       gap: 15px;
     }
 
-    .chart-box,
-    .table-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      border: 2px solid #0077b6;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .chart-box h2,
-    .table-container h2 {
-      text-align: center;
-      color: #0077b6;
-      margin-bottom: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background: #0077b6;
-      color: #fff;
-    }
-
-    tr:hover {
-      background: #e8f4f8;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+    th { background: #0077b6; color: #fff; }
+    tr:hover { background: #e8f4f8; }
 
     #exportExcel {
       background: #0077b6;
@@ -132,14 +76,10 @@
       font-weight: 500;
     }
 
-    #exportExcel:hover {
-      background: #005f8a;
-    }
+    #exportExcel:hover { background: #005f8a; }
 
     @media (max-width: 1100px) {
-      .middle-section, .bottom-section {
-        grid-template-columns: 1fr;
-      }
+      .middle-section, .bottom-section { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -147,17 +87,18 @@
   <h1>Dashboard Monitoring Suhu & Asap</h1>
 
   <div class="cards">
+    <div class="card"><h3>Rata-rata Suhu1</h3><p id="rataSuhu1">0°C</p></div>
+    <div class="card"><h3>Rata-rata Suhu2</h3><p id="rataSuhu2">0°C</p></div>
+    <div class="card"><h3>Rata-rata Suhu3</h3><p id="rataSuhu3">0°C</p></div>
     <div class="card"><h3>Rata-rata Asap</h3><p id="totalAsap">0 µm</p></div>
-    <div class="card"><h3>Rata-rata Suhu</h3><p id="rataSuhu">0°C</p></div>
     <div class="card"><h3>Status Sistem</h3><p id="statusSistem">Normal</p></div>
-    <div class="card"><h3>Waktu Terakhir</h3><p id="waktuUpdate">-</p></div>
   </div>
 
   <div class="middle-section">
-    <div class="gauge"><canvas id="gaugeAsap" width="120" height="120"></canvas><p>Asap (µm)</p></div>
-    <div class="gauge"><canvas id="gaugeSuhu" width="120" height="120"></canvas><p>Suhu (°C)</p></div>
-    <div class="chart-box"><h2>Line Chart Suhu</h2><canvas id="chartSuhu"></canvas></div>
-    <div class="chart-box"><h2>Line Chart Asap</h2><canvas id="chartAsap"></canvas></div>
+    <div class="gauge"><canvas id="gaugeSuhu1"></canvas><p>Suhu1 (°C)</p></div>
+    <div class="gauge"><canvas id="gaugeSuhu2"></canvas><p>Suhu2 (°C)</p></div>
+    <div class="gauge"><canvas id="gaugeSuhu3"></canvas><p>Suhu3 (°C)</p></div>
+    <div class="gauge"><canvas id="gaugeAsap"></canvas><p>Asap (µm)</p></div>
   </div>
 
   <div class="bottom-section">
@@ -170,13 +111,12 @@
         <button id="exportExcel">📥 Unduh Laporan Excel</button>
       </div>
       <table>
-        <thead><tr><th>Waktu</th><th>Suhu (°C)</th><th>Asap (µm)</th><th>Status</th></tr></thead>
+        <thead><tr><th>Waktu</th><th>Suhu1</th><th>Suhu2</th><th>Suhu3</th><th>Asap</th><th>Status</th></tr></thead>
         <tbody id="dataTabel"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- === FIREBASE REALTIME SCRIPT === -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -195,16 +135,6 @@
     const db = getDatabase(app);
     const sensorRef = ref(db, "sensor");
 
-    const chartSuhu = new Chart(document.getElementById("chartSuhu"), {
-      type: "line",
-      data: { labels: [], datasets: [{ label: "Suhu (°C)", data: [], borderColor: "#0077b6", backgroundColor: "rgba(0,119,182,0.2)", fill: true, tension: 0.3 }] },
-    });
-
-    const chartAsap = new Chart(document.getElementById("chartAsap"), {
-      type: "line",
-      data: { labels: [], datasets: [{ label: "Asap (µm)", data: [], borderColor: "#ff6b00", backgroundColor: "rgba(255,107,0,0.2)", fill: true, tension: 0.3 }] },
-    });
-
     const chartPie = new Chart(document.getElementById("chartPie"), {
       type: "pie",
       data: { labels: ["Normal", "Waspada", "Bahaya"], datasets: [{ data: [0, 0, 0], backgroundColor: ["#0077b6", "#ffaa00", "#ff0044"] }] },
@@ -215,20 +145,16 @@
       data: {
         labels: [],
         datasets: [
-          { label: "Suhu (°C)", data: [], borderColor: "#0077b6", fill: true, tension: 0.3, yAxisID: "y1" },
-          { label: "Asap (µm)", data: [], borderColor: "#ff6b00", fill: true, tension: 0.3, yAxisID: "y2" },
+          { label: "Suhu1", data: [], borderColor: "#0077b6", fill: true, tension: 0.3 },
+          { label: "Suhu2", data: [], borderColor: "#00b377", fill: true, tension: 0.3 },
+          { label: "Suhu3", data: [], borderColor: "#b60077", fill: true, tension: 0.3 },
+          { label: "Asap", data: [], borderColor: "#ff6b00", fill: true, tension: 0.3 }
         ],
-      },
-      options: {
-        scales: {
-          y1: { position: "left", ticks: { color: "#0077b6" } },
-          y2: { position: "right", ticks: { color: "#ff6b00" }, grid: { drawOnChartArea: false } },
-        },
       },
     });
 
     const dataTabel = document.getElementById("dataTabel");
-    let totalAsap = 0, totalSuhu = 0, jumlahData = 0;
+    let totalSuhu1 = 0, totalSuhu2 = 0, totalSuhu3 = 0, totalAsap = 0, jumlahData = 0;
     const dataExcel = [];
 
     function drawGauge(canvasId, value, max, color) {
@@ -248,61 +174,67 @@
       ctx.font = "14px Poppins";
       ctx.fillStyle = color;
       ctx.textAlign = "center";
-      ctx.fillText(value, 60, 65);
+      ctx.fillText(value.toFixed(1), 60, 65);
     }
 
     onValue(sensorRef, (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
 
-      const suhu = parseFloat(data.suhu || 0);
+      const suhu1 = parseFloat(data.suhu1 || 0);
+      const suhu2 = parseFloat(data.suhu2 || 0);
+      const suhu3 = parseFloat(data.suhu3 || 0);
       const asap = parseFloat(data.asap || 0);
       const waktu = new Date().toLocaleTimeString();
       const status = asap > 200 ? "Bahaya" : asap > 100 ? "Waspada" : "Normal";
 
       jumlahData++;
+      totalSuhu1 += suhu1;
+      totalSuhu2 += suhu2;
+      totalSuhu3 += suhu3;
       totalAsap += asap;
-      totalSuhu += suhu;
 
-      const rataAsap = (totalAsap / jumlahData).toFixed(1);
-      const rataSuhu = (totalSuhu / jumlahData).toFixed(1);
-
-      document.getElementById("totalAsap").textContent = `${rataAsap} µm`;
-      document.getElementById("rataSuhu").textContent = `${rataSuhu}°C`;
+      document.getElementById("rataSuhu1").textContent = (totalSuhu1/jumlahData).toFixed(1) + "°C";
+      document.getElementById("rataSuhu2").textContent = (totalSuhu2/jumlahData).toFixed(1) + "°C";
+      document.getElementById("rataSuhu3").textContent = (totalSuhu3/jumlahData).toFixed(1) + "°C";
+      document.getElementById("totalAsap").textContent = (totalAsap/jumlahData).toFixed(1) + " µm";
       document.getElementById("statusSistem").textContent = status;
-      document.getElementById("waktuUpdate").textContent = waktu;
 
-      const row = `<tr><td>${waktu}</td><td>${suhu}</td><td>${asap}</td><td>${status}</td></tr>`;
+      const row = `<tr><td>${waktu}</td><td>${suhu1}</td><td>${suhu2}</td><td>${suhu3}</td><td>${asap}</td><td>${status}</td></tr>`;
       dataTabel.insertAdjacentHTML("afterbegin", row);
       if (dataTabel.rows.length > 8) dataTabel.deleteRow(-1);
 
-      dataExcel.unshift({ Waktu: waktu, Suhu: suhu, Asap: asap, Status: status });
+      dataExcel.unshift({ Waktu: waktu, Suhu1: suhu1, Suhu2: suhu2, Suhu3: suhu3, Asap: asap, Status: status });
       if (dataExcel.length > 100) dataExcel.pop();
 
-      [chartSuhu, chartAsap, chartPerbandingan].forEach((chart, i) => {
-        chart.data.labels.push(waktu);
-        if (i < 2) chart.data.datasets[0].data.push(i === 0 ? suhu : asap);
-        else { chart.data.datasets[0].data.push(suhu); chart.data.datasets[1].data.push(asap); }
-        if (chart.data.labels.length > 8) { chart.data.labels.shift(); chart.data.datasets.forEach(d => d.data.shift()); }
-        chart.update();
-      });
+      chartPerbandingan.data.labels.push(waktu);
+      chartPerbandingan.data.datasets[0].data.push(suhu1);
+      chartPerbandingan.data.datasets[1].data.push(suhu2);
+      chartPerbandingan.data.datasets[2].data.push(suhu3);
+      chartPerbandingan.data.datasets[3].data.push(asap);
+
+      if (chartPerbandingan.data.labels.length > 8) {
+        chartPerbandingan.data.labels.shift();
+        chartPerbandingan.data.datasets.forEach(d => d.data.shift());
+      }
+
+      chartPerbandingan.update();
 
       chartPie.data.datasets[0].data = [
-        [...dataTabel.rows].filter(r => r.cells[3].innerText === "Normal").length,
-        [...dataTabel.rows].filter(r => r.cells[3].innerText === "Waspada").length,
-        [...dataTabel.rows].filter(r => r.cells[3].innerText === "Bahaya").length,
+        [...dataTabel.rows].filter(r => r.cells[5].innerText === "Normal").length,
+        [...dataTabel.rows].filter(r => r.cells[5].innerText === "Waspada").length,
+        [...dataTabel.rows].filter(r => r.cells[5].innerText === "Bahaya").length
       ];
       chartPie.update();
 
+      drawGauge("gaugeSuhu1", suhu1, 100, "#0077b6");
+      drawGauge("gaugeSuhu2", suhu2, 100, "#00b377");
+      drawGauge("gaugeSuhu3", suhu3, 100, "#b60077");
       drawGauge("gaugeAsap", asap, 500, "#ff6b00");
-      drawGauge("gaugeSuhu", suhu, 100, "#0077b6");
     });
 
     document.getElementById("exportExcel").addEventListener("click", () => {
-      if (dataExcel.length === 0) {
-        alert("Belum ada data untuk diekspor!");
-        return;
-      }
+      if (dataExcel.length === 0) { alert("Belum ada data untuk diekspor!"); return; }
       const ws = XLSX.utils.json_to_sheet(dataExcel);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Laporan");
